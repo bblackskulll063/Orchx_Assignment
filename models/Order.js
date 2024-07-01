@@ -2,21 +2,11 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-  parts: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Parts",
-      required: true,
-    },
-  ],
-  totalAmount: {
-    type: Number,
-    required: true,
-  },
-  orderDate: {
-    type: Date,
-    default: Date.now,
-  },
+  type: { type: String, enum: ["purchase", "sales"], required: true },
+  date: { type: Date, default: Date.now },
+  totalAmount: { type: Number, required: true },
 });
+
+orderSchema.index({ type: 1, date: -1 });
 
 module.exports = mongoose.model("Order", orderSchema);
