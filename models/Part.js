@@ -1,6 +1,6 @@
 // src/models/Parts.js
 const mongoose = require("mongoose");
-const serialNumberSchema = require("./SerialNumber");
+// const serialNumberSchema = require("./SerialNumber");
 
 const partsSchema = new mongoose.Schema({
   name: {
@@ -25,13 +25,14 @@ const partsSchema = new mongoose.Schema({
 
   quantity: {
     type: Number,
-    required: true,
+    default: 0,
   },
 
   price_single: {
     type: Number,
     required: true,
   },
+  
   description: String,
 });
 

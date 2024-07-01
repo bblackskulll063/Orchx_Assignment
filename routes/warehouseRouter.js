@@ -1,9 +1,13 @@
+// src/routes/warehouse.js
 const express = require('express');
 const router = express.Router();
 
-// Define routes
-router.get('/', (req, res) => {
-  res.send('This is a Warehouse Route');
-});
+const warehouseController = require('../controllers/warehouseController');
+
+router.get('/', warehouseController.getAllWarehouses);
+router.get('/:id', warehouseController.getWarehouseById);
+router.post('/', warehouseController.createWarehouse);
+router.put('/:id', warehouseController.updateWarehouse);
+router.delete('/:id', warehouseController.deleteWarehouse);
 
 module.exports = router;

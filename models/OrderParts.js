@@ -4,13 +4,12 @@ const orderPartSchema = new mongoose.Schema({
   order: { type: mongoose.Schema.Types.ObjectId, ref: "Order", required: true },
   part: { type: mongoose.Schema.Types.ObjectId, ref: "Parts", required: true },
   quantity: { type: Number, required: true },
-  serialNumbers: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "SerialNumber",
-      required: true,
-    },
-  ],
+  amount_single: { type: Number, required: true },
+  serialNumbers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "SerialNumber",
+    required: true,
+  }],
 });
 
 orderPartSchema.index({ order: 1 });

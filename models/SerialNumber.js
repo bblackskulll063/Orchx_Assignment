@@ -8,6 +8,6 @@ const serialNumberSchema = new mongoose.Schema({
   partId: { type: mongoose.Schema.Types.ObjectId, ref: "Part", required: true },
 });
 
-serialNumberSchema.index({ serialNumber: 1 }, { unique: true });
+serialNumberSchema.index({ serialNumber: 1 });
 
 module.exports = mongoose.model("SerialNumber", serialNumberSchema);
