@@ -39,15 +39,23 @@ exports.createOrder = catchAsync(async (req, res, next) => {
         // Generate and save serial numbers for the purchase order
         serialNumbers = generateSerialNumbers(item.quantity, part._id);
         part.quantity += item.quantity;
-        serialNumbers = await SerialNumber.create(serialNumbers, { session });
+        const createdSerialNumbers = await SerialNumber.insertMany(
+          serialNumbers,
+          { session }
+        );
+        serialNumbers = createdSerialNumbers.map((sn) => sn._id); // Extract ObjectId from created serial numbers
       } else if (req.body.type === "sales") {
-        // Assign available serial numbers for the sales order
-        const availableSerialNumbers = await SerialNumber.find({
-          partId: item.part,
-          status: "inwarded",
-        })
-          .limit(item.quantity)
-          .session(session);
+        // Assign available serial numbers for the sales order using aggregation pipeline
+        const availableSerialNumbers = await SerialNumber.aggregate([
+          {
+            $match: {
+              partId: new mongoose.Types.ObjectId(item.part),
+              status: "inwarded",
+            },
+          },
+          { $limit: item.quantity },
+          { $project: { _id: 1 } },
+        ]).session(session);
 
         if (availableSerialNumbers.length < item.quantity) {
           throw new Error("Not enough inventory");
@@ -70,7 +78,7 @@ exports.createOrder = catchAsync(async (req, res, next) => {
         part: item.part,
         quantity: item.quantity,
         amount_single: item.amount_single,
-        serialNumbers: serialNumbers.map((sn) => sn.toString()), // Ensure serialNumbers are saved as strings
+        serialNumbers: serialNumbers, // Ensure serialNumbers are saved as ObjectId
       });
       await orderPart.save({ session });
     }
@@ -81,6 +89,65 @@ exports.createOrder = catchAsync(async (req, res, next) => {
   } catch (e) {
     await session.abortTransaction();
     session.endSession();
-    next(e); // Pass the error to the global error handler
+    next(e);
   }
+});
+
+exports.getOrders = catchAsync(async (req, res, next) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const page = parseInt(req.query.page) || 1;
+  const skip = (page - 1) * limit;
+
+  const resp = await Order.aggregate([
+    {
+      $skip: skip,
+    },
+    {
+      $limit: limit,
+    },
+    {
+      $lookup: {
+        from: "orderparts",
+        localField: "_id",
+        foreignField: "order",
+        as: "Parts",
+      },
+    },
+    {
+      $unwind: {
+        path: "$Parts",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $lookup: {
+        from: "parts",
+        localField: "Parts.part",
+        foreignField: "_id",
+        as: "Parts.partDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$Parts.partDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: "$_id",
+        type: { $first: "$type" },
+        date: { $first: "$date" },
+        totalAmount: { $first: "$totalAmount" },
+        totalQuantity: { $first: "$totalQuantity" },
+        Parts: { $push: "$Parts" },
+      },
+    },
+  ]);
+
+  console.log(resp);
+  res.status(200).json({
+    status: "success",
+    data: resp,
+  });
 });
