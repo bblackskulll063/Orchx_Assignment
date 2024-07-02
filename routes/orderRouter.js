@@ -11,5 +11,5 @@ router
 
 router.get("/total/sales", orderController.getTotalSalesAmount);
 router.get("/parts/mostselling", orderController.getMostSellingParts);
-
+router.get("/total/purchase", orderController.getTotalPurchaseAmount);
 module.exports = router;
