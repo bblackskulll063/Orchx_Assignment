@@ -151,3 +151,90 @@ exports.getOrders = catchAsync(async (req, res, next) => {
     data: resp,
   });
 });
+
+exports.getTotalSalesAmount = catchAsync(async (req, res, next) => {
+  const resp = await Order.aggregate([
+    { $match: { type: "sales" } },
+    {
+      $group: {
+        _id: "all_orders",
+        totalAmount: { $sum: "$totalAmount" },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: "success",
+    data: resp,
+  });
+});
+
+exports.getTotalPurchaseAmount = catchAsync(async (req, res, next) => {
+  const resp = await Order.aggregate([
+    { $match: { type: "purchase" } },
+    {
+      $group: {
+        _id: "all_orders",
+        totalAmount: { $sum: "$totalAmount" },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: "success",
+    data: resp,
+  });
+});
+
+exports.getMostSellingParts = catchAsync(async (req, res, next) => {
+  const resp = await Order.aggregate([
+    { $match: { type: "sales" } },
+    {
+      $lookup: {
+        from: "orderparts",
+        localField: "_id",
+        foreignField: "order",
+        as: "Parts",
+      },
+    },
+    {
+      $unwind: "$Parts",
+    },
+    {
+      $group: {
+        _id: "$Parts.part",
+        totalQuantity: { $sum: "$Parts.quantity" },
+      },
+    },
+    {
+      $sort: { totalQuantity: -1 },
+    },
+    {
+      $limit: 10,
+    },
+    {
+      $lookup: {
+        from: "parts",
+        localField: "_id",
+        foreignField: "_id",
+        as: "partDetails",
+      },
+    },
+    {
+      $unwind: "$partDetails",
+    },
+    {
+      $project: {
+        _id: 0,
+        partId: "$_id",
+        name: "$partDetails.name",
+        image: "$partDetails.image",
+        totalQuantity: 1,
+      },
+    },
+  ]);
+  res.status(200).json({
+    status: "success",
+    data: resp,
+  });
+});
