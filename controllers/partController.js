@@ -1,23 +1,24 @@
 const mongoose = require("mongoose");
-const Parts = require('../models/part');
-const catchAsync = require('../utils/catchAsync');
+const Parts = require("../models/Part");
+const catchAsync = require("../utils/catchAsync");
 
 // Get all parts
-exports.getAllParts = catchAsync(async (req, res) => {
-  const parts = await Parts.find().populate('brand warehouse');
+exports.getAllParts = catchAsync(async (req, res, next) => {
+  const parts = await Parts.find().populate("brand warehouse");
   res.json(parts);
 });
 
 // Get a single part by ID
-exports.getPartById = catchAsync(async (req, res) => {
-  const part = await Parts.findById(req.params.id).populate('brand warehouse');
-  if (!part) return res.status(404).json({ message: 'Part not found' });
+exports.getPartById = catchAsync(async (req, res, next) => {
+  const part = await Parts.findById(req.params.id).populate("brand warehouse");
+  if (!part) return res.status(404).json({ message: "Part not found" });
   res.json(part);
 });
 
 // Create a new part
-exports.createPart = catchAsync(async (req, res) => {
-  const { name, brand, warehouse, quantity, price_single, description } = req.body;
+exports.createPart = catchAsync(async (req, res, next) => {
+  const { name, brand, warehouse, quantity, price_single, description } =
+    req.body;
   const part = new Parts({
     name,
     brand,
@@ -36,11 +37,12 @@ exports.createPart = catchAsync(async (req, res) => {
 });
 
 // Update a part by ID
-exports.updatePart = catchAsync(async (req, res) => {
-  const { name, brand, warehouse, quantity, price_single, description } = req.body;
+exports.updatePart = catchAsync(async (req, res, next) => {
+  const { name, brand, warehouse, quantity, price_single, description } =
+    req.body;
   const part = await Parts.findById(req.params.id);
 
-  if (!part) return res.status(404).json({ message: 'Part not found' });
+  if (!part) return res.status(404).json({ message: "Part not found" });
 
   part.name = name || part.name;
   part.brand = brand || part.brand;
@@ -58,8 +60,8 @@ exports.updatePart = catchAsync(async (req, res) => {
 });
 
 // Delete a part by ID
-exports.deletePart = catchAsync(async (req, res) => {
+exports.deletePart = catchAsync(async (req, res, next) => {
   const deletedPart = await Parts.findByIdAndDelete(req.params.id);
-  if (!deletedPart) return res.status(404).json({ message: 'Part not found' });
-  res.json({ message: 'Part deleted' });
+  if (!deletedPart) return res.status(404).json({ message: "Part not found" });
+  res.json({ message: "Part deleted" });
 });
