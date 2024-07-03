@@ -2,7 +2,7 @@ const express = require("express");
 var cors = require("cors");
 const connectToMongo = require("./utils/db.js");
 const globalErrorHandler = require("./middlewares/error.js");
-
+const AppError = require("./utils/appError.js");
 connectToMongo();
 const app = express();
 const PORT = process.env.PORT || 5000;
