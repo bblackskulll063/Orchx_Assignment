@@ -12,9 +12,9 @@ app.use(cors());
 app.use(express.json());
 
 // Basic route
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
-});
+// app.get("/", (req, res) => {
+//   res.send("Hello, World!");
+// });
 app.use("/brand", require("./routes/brandRouter"));
 app.use("/order", require("./routes/orderRouter"));
 app.use("/part", require("./routes/partRouter"));
